@@ -1,0 +1,7 @@
+.idea/*
+nbproject/*
+.vscode/*
+.history/
+*.vsix
+.git/*
+composer.*

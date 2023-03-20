@@ -1,0 +1,1 @@
+<footer>Footer block</footer>
