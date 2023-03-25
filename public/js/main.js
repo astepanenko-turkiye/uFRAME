@@ -3,7 +3,6 @@
  * "console/photo-upload":"initUploadSkuId()"
  */
 const initScriptsData={
-    "test":"test()"
 }
 
 function trim(str, chars) { return str.trim().split(chars).filter(Boolean).join(chars) }
