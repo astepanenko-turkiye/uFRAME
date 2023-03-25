@@ -1,11 +1,6 @@
 # μFRAME #
 
-Micro MVC-framework
-
-### What is this? ###
-
-* A SPA zero-dependency micro MVC-framework
-* Includes Telegram class to be used as a monitoring helper
+Micro PHP-framework for SPA web and console applications
 
 ### How do I get set up? ###
 
