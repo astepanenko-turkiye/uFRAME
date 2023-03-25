@@ -118,7 +118,7 @@ class Telegram {
         try {
 
             if(!is_array($options)) {
-                $text=$options; $options=array();
+                $text=$options; $options=[];
                 $options["text"]=$text;
                 $options["text_wrap_start_tag"]=$text_wrap_start_tag;
                 $options["text_wrap_end_tag"]=$text_wrap_end_tag;
@@ -129,17 +129,18 @@ class Telegram {
             $text=                  array_key_exists("text",$options) ?                 $options["text"] :                  null;
             $text_wrap_start_tag=   array_key_exists("text_wrap_start_tag",$options) ?  $options["text_wrap_start_tag"] :   "";
             $text_wrap_end_tag=     array_key_exists("text_wrap_end_tag",$options) ?    $options["text_wrap_end_tag"] :     "";
-            $custom_field=          array_key_exists("custom_field",$options) ?         $options["custom_field"] :          array();
+            $custom_field=          array_key_exists("custom_field",$options) ?         $options["custom_field"] :          [];
             $filename=              array_key_exists("filename",$options) ?             $options["filename"] :              null;
+            $filetype=              array_key_exists("filetype",$options) ?             $options["filetype"] :              null;
             $caption=               array_key_exists("caption",$options) ?              $options["caption"] :               null;
+            $reply_markup=          array_key_exists("reply_markup",$options) ?         $options["reply_markup"] :          [];
             $chat_id=               array_key_exists("chat_id",$options) ?              $options["chat_id"] :               $config["chat_id_info"];
             $key=                   array_key_exists("key",$options) ?                  $options["key"] :                   $config["key"];
-            $optimize=              array_key_exists("optimize",$options) ?             $options["optimize"] :              null;
             $verbose=               array_key_exists("verbose",$options) ?              $options["verbose"] :               null;
+            $parse_mode=            array_key_exists("parse_mode",$options) ?           $options["parse_mode"] :            "HTML";
+            $disable_web_page_preview=array_key_exists("disable_web_page_preview",$options) ? $options["disable_web_page_preview"] : true;
 
-            if($verbose) {
-                self::$verbose=true;
-            }
+            if($verbose) self::$verbose=true;
 
             $file=array_key_exists("debug",$options) && array_key_exists("file",$options["debug"]) ? $options["debug"]["file"] : null;
             $line=array_key_exists("debug",$options) && array_key_exists("line",$options["debug"]) ? $options["debug"]["line"] : null;
@@ -150,91 +151,119 @@ class Telegram {
 
             $a=[
                 "chat_id"=>$chat_id,
-                "parse_mode"=>"HTML",
-                "disable_web_page_preview"=>true
+                "disable_web_page_preview"=>$disable_web_page_preview
             ];
+
+            if($parse_mode) {
+                $a=array_merge($a,["parse_mode"=>$parse_mode]);
+            }
+
+            if($reply_markup) {
+                $a=array_merge($a,["reply_markup"=>json_encode($reply_markup)]);
+            }
 
             $url="sendMessage";
             $header="Content-type: application/x-www-form-urlencoded";
 
-            if(is_array($filename)) {
+            switch($filetype) {
 
-                $url="sendMediaGroup";
-                $header="Content-type: multipart/form-data";
+                case "photo":
 
-                $upload_file_type="photo";
-                $media=array();
+                    if(is_array($filename) && count($filename)>1) {
 
-                foreach($filename as $k=>$fn) {
+                        $url="sendMediaGroup";
+                        $header="Content-type: multipart/form-data";
 
-                    $fname=$upload_file_type."_".$k;
+                        $upload_file_type="photo";
+                        $media=[];
 
-                    $file=new \SplFileInfo($fn);
-                    $fn=$file->getPathname();
+                        foreach($filename as $k=>$fn) {
 
-                    $mime=mime_content_type($fn);
+                            $fname=$upload_file_type."_".$k;
 
-                    if($optimize) {
-                        if(self::$verbose) {
-                            echo "OPTIMIZING\r\n";
+                            $file=new \SplFileInfo($fn);
+                            $fn=$file->getPathname();
+
+                            $mime=mime_content_type($fn);
+
+                            $a=array_merge($a,[$fname=>new \CurlFile($fn,$mime,$fname)]);
+
+                            $media[]=[
+                                "type"=>$upload_file_type,
+                                "media"=>"attach://".$fname,
+                                "caption"=>$caption
+                            ];
+
                         }
+
+                        $a=array_merge($a,["media"=>json_encode($media)]);
+
+                    } else {
+
+                        $url="sendPhoto";
+                        $header="Content-type: multipart/form-data";
+
+                        if($custom_field) $a=array_merge($a,$custom_field);
+
+                        $filename=is_array($filename) ? current($filename) : $filename;
+
+                        $file=new \SplFileInfo($filename);
+
+                        $fullpath=$file->getPathname();
+                        $fname=$file->getFileName();
+
+                        $file=new \CurlFile($fullpath,mime_content_type($fullpath),$fname);
+
+                        $a=array_merge($a,["photo"=>$file,"caption"=>$caption]);
+
                     }
 
-                    $a=array_merge($a,array(
-                        $fname=>new \CurlFile($fn,$mime,$fname),
-                    ));
-                    $media[]=array(
-                        "type"=>$upload_file_type,
-                        "media"=>"attach://".$fname,
-                        "caption"=>$caption,
-                    );
-                }
+                    self::_send($key,$url,$a,$header);
 
-                $a=array_merge($a,array(
-                    "media"=>json_encode($media,JSON_UNESCAPED_UNICODE)
-                ));
+                    break;
 
-                $response=self::_send($key,$url,$a,$header);
+                case "document":
 
-            } else
-            if($filename) {
+                    $url="sendDocument";
+                    $header="Content-type: multipart/form-data";
 
-                $url="sendDocument";
-                $header="Content-type: multipart/form-data";
+                    if($custom_field) $a=array_merge($a,$custom_field);
 
-                if($custom_field) $a=array_merge($a,$custom_field);
+                    $file=new \SplFileInfo($filename);
 
-                $file=new \SplFileInfo($filename);
+                    $fullpath=$file->getPathname();
+                    $fname=$file->getFileName();
 
-                $fullpath=$file->getPathname();
-                $fname=$file->getFileName();
+                    $file=new \CurlFile($fullpath,mime_content_type($fullpath),$fname);
 
-                $file=new \CurlFile($fullpath,mime_content_type($fullpath),$fname);
+                    $a=array_merge($a,["document"=>$file,"caption"=>$caption]);
 
-                $a=array_merge($a,array("document"=>$file,"caption"=>$caption));
-                $response=self::_send($key,$url,$a,$header);
+                    self::_send($key,$url,$a,$header);
 
-            } else {
+                    break;
 
-                $text=trim($text);
+                default:
 
-                if($text==="") return false;
+                    $text=trim($text);
 
-                if($custom_field) $a=array_merge($a,$custom_field);
+                    if($text==="") return false;
 
-                $strings=self::chunk_split_unicode($text,4010); unset($text);
-                $all_parts=count($strings);
+                    if($custom_field) $a=array_merge($a,$custom_field);
 
-                foreach($strings as $k=>$fetched_text) {
+                    $strings=self::chunk_split_unicode($text,4010); unset($text);
 
-                    $fetched_text=$text_wrap_start_tag.$fetched_text.$text_wrap_end_tag;
+                    foreach($strings as $k=>$fetched_text) {
 
-                    $a=array_merge($a,array("text"=>$fetched_text));
+                        $fetched_text=$text_wrap_start_tag.$fetched_text.$text_wrap_end_tag;
 
-                    $response=self::_send($key,$url,http_build_query($a),$header);
+                        $a=array_merge($a,["text"=>$fetched_text]);
 
-                }
+                        $a=http_build_query($a);
 
+                        self::_send($key,$url,$a,$header);
+                    }
+
+                    break;
             }
 
         } catch(\Exception $e) {
