@@ -12,7 +12,7 @@ if($count_params===0 || $count_params===1) {
 
     $task=array_shift($params);
 
-    $task=kebabToCamelCase($task,1);
+    $task=kebabToPascalCase($task);
 
     $task="Application\\Tasks\\".$task."Task";
 

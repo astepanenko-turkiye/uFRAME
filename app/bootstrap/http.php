@@ -109,7 +109,7 @@ if($count_params===0) {
 
 if(!defined("VIEW_ACTION_FOLDER")) define("VIEW_ACTION_FOLDER",$controller);
 
-$controller=kebabToCamelCase($controller,1);
+$controller=kebabToPascalCase($controller);
 
 $controller="Application\\Controllers\\".(REQ_TYPE==="HEAD" ? "GET" : REQ_TYPE)."\\".$controller."Controller"; unset($controller_array);
 

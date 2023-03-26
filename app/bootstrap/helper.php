@@ -20,11 +20,21 @@ if(!function_exists('camelToKebabCase')) {
 }
 
 if(!function_exists('kebabToCamelCase')) {
-    function kebabToCamelCase($str,$ucfirst=false) {
+    function kebabToCamelCase($str) {
 
         $str=str_replace(" ","",ucwords(str_replace("-"," ",$str)));
 
-        if(!$ucfirst) $str[0]=strtolower($str[0]);
+        $str[0]=strtolower($str[0]);
+
+        return $str;
+
+    }
+}
+
+if(!function_exists('kebabToPascalCase')) {
+    function kebabToPascalCase($str) {
+
+        $str=str_replace(" ","",ucwords(str_replace("-"," ",$str)));
 
         return $str;
 
