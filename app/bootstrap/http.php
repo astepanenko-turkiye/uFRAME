@@ -46,17 +46,22 @@ if(!defined("CMPRSDRES")) define("CMPRSDRES",$is_compressed_response); unset($is
 
 if(REQ_TYPE==="POST") {
 
-//    if(!array_key_exists(AUTH_TOKEN,$auth_tokens)) {
-//
-//        $http_response=new \Application\Components\response\ErrorHttpResponse(403);
-//        $http_response->flush();
-//        exit;
-//
-//    }
+    /*
+    if(!array_key_exists(AUTH_TOKEN,$auth_tokens)) {
+
+        $http_response=new \Application\Components\response\ErrorHttpResponse(403);
+        $http_response->flush();
+        exit;
+
+    }
+    */
 
     $input=file_get_contents("php://input");
 
     switch(CMPRSDREQ) {
+        case "bz2":
+            $input=bzdecompress($input);
+            break;
         case "gzip":
             $input=gzuncompress($input);
             break;

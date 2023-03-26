@@ -41,15 +41,14 @@ abstract class HttpResponse {
         if(is_null($this->body)) $this->body="Unknown error";
 
         switch($this->COMPRESSED) {
+            case "bz2":
+                $this->body=bzcompress($this->body,9);
+                break;
             case "gzip":
-
                 $this->body=gzcompress($this->body,9);
-
                 break;
             case "zlib":
-
                 $this->body=gzencode($this->body,9);
-
                 break;
         }
 
