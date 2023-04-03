@@ -11,3 +11,5 @@ Micro PHP-framework for SPA web and console applications
 * Clone this repository
 * Make `public/index.php` an entrypoint in your web-server config
 * You've got yourself a working SPA site!
+
+If you’re using this framework, please hit the ★Star button for me to continue working on it!
