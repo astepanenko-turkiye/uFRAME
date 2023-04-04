@@ -5,3 +5,4 @@ nbproject/*
 *.vsix
 .git/*
 composer.*
+vendor/
