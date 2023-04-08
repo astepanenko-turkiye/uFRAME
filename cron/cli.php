@@ -1,10 +1,10 @@
 <?php
 
-if(!defined('START_TIME')) define('START_TIME', microtime(1));
-
-require_once realpath(dirname(__FILE__,2)).DIRECTORY_SEPARATOR."app".DIRECTORY_SEPARATOR."config".DIRECTORY_SEPARATOR."config.php";
-
 try {
+
+    require_once realpath(dirname(__FILE__,2)).DIRECTORY_SEPARATOR."app".DIRECTORY_SEPARATOR."bootstrap".DIRECTORY_SEPARATOR."bootstrap.php";
+
+    require_once BASE_DIR."app".DS."config".DS."config.php";
 
     require_once BASE_DIR."app".DS."bootstrap".DS."helper.php";
 
