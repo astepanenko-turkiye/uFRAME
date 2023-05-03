@@ -6,6 +6,9 @@ if(!defined("BASE_URL")) define("BASE_URL","//".$_SERVER['SERVER_NAME']);
 
 if(!empty($_COOKIE) && array_key_exists("PHPSESSID",$_COOKIE)) session_start(['cookie_lifetime' => 60*60*24*30]);
 
+$content_type=(!empty($_SERVER['HTTP_CONTENT_TYPE']) ? strtolower($_SERVER['HTTP_CONTENT_TYPE']) : "application/json");
+if(!defined("CONTENT_TYPE")) define("CONTENT_TYPE",$content_type); unset($content_type);
+
 $is_ajax=(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH'])==='xmlhttprequest');
 if(!defined("IS_AJAX")) define("IS_AJAX",$is_ajax); unset($is_ajax);
 
@@ -74,7 +77,23 @@ if(REQ_TYPE==="POST") {
 
     }
 
-    if(!empty($input)) $_POST=json_decode($input,1);
+    if(!empty($input)) {
+
+        switch(CONTENT_TYPE) {
+            case "application/x-msgpack":
+
+                $_POST=msgpack_unpack($input);
+
+                break;
+
+            default:
+
+                $_POST=json_decode($input,true);
+
+                break;
+        }
+
+    }
 
     if(!defined("RAW_INPUT")) define("RAW_INPUT",$input);
 

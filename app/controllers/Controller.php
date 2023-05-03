@@ -5,6 +5,7 @@ namespace Application\Controllers;
 use Application\Components\common\View;
 
 use Application\Components\response\HttpResponse;
+use Application\Components\response\HttpResponseFactory;
 use Application\Components\response\JsonResponse;
 use Application\Components\response\OkHttpResponse;
 use Application\Components\response\ErrorHttpResponse;
@@ -18,6 +19,14 @@ abstract class Controller {
         if($name==="view") {
 
             $this->$name=new View();
+
+            return $this->$name;
+
+        }
+
+        if($name==="httpResponseClassName") {
+
+            $this->$name=HttpResponseFactory::get(CONTENT_TYPE);
 
             return $this->$name;
 
@@ -71,7 +80,7 @@ abstract class Controller {
 
         $html=$this->view->getContent();
 
-        return $this->setHttpResponse(new JsonResponse(200,[
+        return $this->setHttpResponse(new $this->httpResponseClassName(200,[
             "success"=>true,
             "title"=>$title,
             "html"=>$html,

@@ -2,17 +2,14 @@
 
 namespace Application\Controllers\POST;
 
-use
-    Application\Controllers\Controller
-    ,Application\Components\response\JsonResponse
-;
+use Application\Controllers\Controller;
 
 class IndexController extends Controller {
 
     public function indexAction() {
 
         if(empty($_POST)) {
-            return $this->setHttpResponse(new JsonResponse(400,"empty body"));
+            return $this->setHttpResponse(new $this->httpResponseClassName(400,"empty body"));
         }
 
     }

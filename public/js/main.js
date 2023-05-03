@@ -5,6 +5,69 @@
 const initScriptsData={
 }
 
+function jsonFetch(url,params,callback,reject,headers={}) {
+
+    let _o={
+        headers: Object.assign({}, {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }, headers),
+        method: "POST"
+    };
+
+    if(params) {
+        _o["body"]=JSON.stringify(params);
+    }
+
+    fetch(url, _o)
+    .then(response => response.json())
+    .then(data => callback(data))
+    .catch(error => {
+
+        if(typeof reject === 'function') {
+            reject(error);
+        }
+
+    });
+}
+
+function MessagePackFetch(url,params,callback,reject,headers={}) {
+
+    let _o={
+        headers: Object.assign({}, {
+            'Accept': 'application/x-msgpack',
+            'Content-Type': 'application/x-msgpack'
+        }, headers),
+        method: "POST"
+    };
+
+    if(params) {
+        _o["body"]=MessagePack.encode(params);
+    }
+
+    fetch(url, _o)
+    .then(response => {
+        return response.arrayBuffer();
+    })
+    .then(arrayBuffer => {
+
+        const data=MessagePack.decode(new Uint8Array(arrayBuffer));
+
+        if(typeof callback === 'function') {
+            callback(data);
+        }
+
+    })
+    .catch(error => {
+
+        if(typeof reject === 'function') {
+            reject(error);
+        }
+
+    });
+
+}
+
 function trim(str, chars) { return str.trim().split(chars).filter(Boolean).join(chars) }
 
 function replaceDomElement(responseHtml, selector, elId, hash, callback) {
@@ -26,6 +89,8 @@ function replaceDomElement(responseHtml, selector, elId, hash, callback) {
 }
 
 window.onpopstate=function(e) {
+
+    window.isPopped=true; setTimeout(function() { window.isPopped=false; },2000);
 
     if(e.state) {
 
@@ -65,56 +130,52 @@ function fetchUrl(elId,url,callback=null,makePushToHistory=true) {
 
     let hash; if(el) hash=el.getAttribute("data-hash");
 
-    fetch(
+    jsonFetch(
         url,
-        {
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-                "X-Requested-With": "XMLHttpRequest",
-                "Actual-Request-Type": "GET"
-            },
-            method: "POST"
-        }
-    )
-    .then(response => response.json())
-    .then(data => {
+        null,
+        function(response) {
 
-        if(data["success"]) {
+            if(response["success"]) {
 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            if(el) el.classList.add("active");
+                if(el) el.classList.add("active");
 
-            let mainEl=document.querySelector('main');
+                let mainEl=document.querySelector('main');
 
-            const data_hash=mainEl.getAttribute("data-hash");
+                const data_hash=mainEl.getAttribute("data-hash");
 
-            let rerender=true; if(data_hash===hash && hash===data["hash"]) rerender=false;
+                let rerender=true; if(data_hash===hash && hash===response["hash"]) rerender=false;
 
-            document.title=data["title"];
+                document.title=response["title"];
 
-            if(rerender) {
+                if(rerender) {
 
-                replaceDomElement(data["html"], "main", elId, data["hash"], callback);
+                    replaceDomElement(response["html"], "main", elId, response["hash"], callback);
 
-                if(makePushToHistory) {
+                    if(makePushToHistory) {
 
-                    let evalStr="fetchUrl('"+elId+"','"+url+"',"+(callback ? "'"+callback+"'" :"null")+",false)";
+                        let evalStr="fetchUrl('"+elId+"','"+url+"',"+(callback ? "'"+callback+"'" :"null")+",false)";
 
-                    window.history.pushState(
-                        { func: evalStr, pageTitle: data["title"] },
-                        "",
-                        url
-                    );
+                        window.history.pushState(
+                            { func: evalStr, pageTitle: response["title"] },
+                            "",
+                            url
+                        );
+
+                    }
 
                 }
 
             }
 
+        },
+        null,
+        {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Actual-Request-Type': 'GET'
         }
-
-    });
+    );
 
 }
 
@@ -166,7 +227,7 @@ document.addEventListener("click", function(e) {
 
 }, false);
 
-if(!window["firstTimeRequest"]) {
+if(!window["firstRequestHappened"]) {
 
     let callback=getInitScripts(document.location.pathname);
 
@@ -180,6 +241,6 @@ if(!window["firstTimeRequest"]) {
         document.location.href
     );
 
-    window["firstTimeRequest"]=true;
+    window["firstRequestHappened"]=true;
 
 }
