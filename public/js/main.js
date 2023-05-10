@@ -5,18 +5,22 @@
 const initScriptsData={
 }
 
-function jsonFetch(url,params,callback,reject,headers={}) {
+function jsonFetch(url,params,callback,reject,headers={},onlyHeaders) {
 
     let _o={
         headers: Object.assign({}, {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            "Accept": "application/json",
+            "Content-Type": "application/json"
         }, headers),
         method: "POST"
     };
 
-    if(params) {
-        _o["body"]=JSON.stringify(params);
+    if(onlyHeaders) _o["headers"]=onlyHeaders;
+
+    if(_o["headers"]["Content-Type"]!=="application/json") {
+        if(params) _o["body"]=params;
+    } else {
+        if(params) _o["body"]=JSON.stringify(params);
     }
 
     fetch(url, _o)
@@ -31,18 +35,22 @@ function jsonFetch(url,params,callback,reject,headers={}) {
     });
 }
 
-function MessagePackFetch(url,params,callback,reject,headers={}) {
+function MessagePackFetch(url,params,callback,reject,headers={},onlyHeaders) {
 
     let _o={
         headers: Object.assign({}, {
-            'Accept': 'application/x-msgpack',
-            'Content-Type': 'application/x-msgpack'
+            "Accept": "application/x-msgpack",
+            "Content-Type": "application/x-msgpack"
         }, headers),
         method: "POST"
     };
 
-    if(params) {
-        _o["body"]=MessagePack.encode(params);
+    if(onlyHeaders) _o["headers"]=onlyHeaders;
+
+    if(_o["headers"]["Content-Type"]!=="application/x-msgpack") {
+        if(params) _o["body"]=params;
+    } else {
+        if(params) _o["body"]=MessagePack.encode(params);
     }
 
     fetch(url, _o)

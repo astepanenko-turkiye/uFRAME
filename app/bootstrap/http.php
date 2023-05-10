@@ -6,7 +6,15 @@ if(!defined("BASE_URL")) define("BASE_URL","//".$_SERVER['SERVER_NAME']);
 
 if(!empty($_COOKIE) && array_key_exists("PHPSESSID",$_COOKIE)) session_start(['cookie_lifetime' => 60*60*24*30]);
 
-$content_type=(!empty($_SERVER['HTTP_CONTENT_TYPE']) ? strtolower($_SERVER['HTTP_CONTENT_TYPE']) : "application/json");
+$content_type=(
+(!empty($_SERVER['HTTP_CONTENT_TYPE']) && substr($_SERVER['HTTP_CONTENT_TYPE'],0,11)==="application")
+? strtolower($_SERVER['HTTP_CONTENT_TYPE'])
+: (
+    (!empty($_SERVER['HTTP_ACCEPT']) && substr($_SERVER['HTTP_ACCEPT'],0,11)==="application")
+    ? strtolower($_SERVER['HTTP_ACCEPT'])
+    : "application/json"
+)
+);
 if(!defined("CONTENT_TYPE")) define("CONTENT_TYPE",$content_type); unset($content_type);
 
 $is_ajax=(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH'])==='xmlhttprequest');
