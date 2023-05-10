@@ -5,7 +5,7 @@
 const initScriptsData={
 }
 
-function jsonFetch(url,params,callback,reject,headers={},onlyHeaders) {
+function jsonFetch(url,params,callback,reject,headers={},forceHeaders) {
 
     let _o={
         headers: Object.assign({}, {
@@ -15,7 +15,7 @@ function jsonFetch(url,params,callback,reject,headers={},onlyHeaders) {
         method: "POST"
     };
 
-    if(onlyHeaders) _o["headers"]=onlyHeaders;
+    if(forceHeaders) _o["headers"]=forceHeaders;
 
     if(_o["headers"]["Content-Type"]!=="application/json") {
         if(params) _o["body"]=params;
@@ -35,7 +35,7 @@ function jsonFetch(url,params,callback,reject,headers={},onlyHeaders) {
     });
 }
 
-function MessagePackFetch(url,params,callback,reject,headers={},onlyHeaders) {
+function MessagePackFetch(url,params,callback,reject,headers={},forceHeaders) {
 
     let _o={
         headers: Object.assign({}, {
@@ -45,7 +45,7 @@ function MessagePackFetch(url,params,callback,reject,headers={},onlyHeaders) {
         method: "POST"
     };
 
-    if(onlyHeaders) _o["headers"]=onlyHeaders;
+    if(forceHeaders) _o["headers"]=forceHeaders;
 
     if(_o["headers"]["Content-Type"]!=="application/x-msgpack") {
         if(params) _o["body"]=params;
